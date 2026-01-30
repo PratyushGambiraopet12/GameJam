@@ -60,7 +60,7 @@ public class MaskController : MonoBehaviour
 
             case MaskTypes.Stone:
                 Rb.mass = 6f;
-                Rb.gravityScale = 4f;
+                Rb.gravityScale = 3.5f;
                 SR.color = Color.gray;
                 PlayerController.Instance.MoveSpeed = 2f;
                 Debug.Log("Stone Mask Applied");
