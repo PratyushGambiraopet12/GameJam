@@ -1,7 +1,9 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Assertions.Must;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
 using UnityEngine.Windows;
 
 
@@ -13,9 +15,17 @@ public enum MaskTypes
     Feather
 
 }
+
+public enum SpikeType
+{
+    Wooden,
+    Metal
+}
 public class PlayerController : MonoBehaviour
 {
-    public static PlayerController Instance { get; private set; }   
+    public static PlayerController Instance { get; private set; }
+
+    private Vector3 StartPoint;
 
     [Header("Movement Settings")]   
     public float MoveSpeed;
@@ -41,17 +51,16 @@ public class PlayerController : MonoBehaviour
         }
 
         Instance = this;
+        StartPoint = transform.position;
 
     }
 
 
     private void Update()
     {
-        
-        HandleMovement();
 
-        HandleJump();
 
+        HandleInput();
         if (UserInput.Instance.JumpPressedThisFrame())
         {
             Jump();
@@ -74,11 +83,23 @@ public class PlayerController : MonoBehaviour
             MaskController.Instance.SwitchMask(MaskTypes.Magnet);
     }
 
-    
+    private void FixedUpdate()
+    {
+        HandleMovement();
+        HandleJump();
+
+
+    }
+
+
+    public void HandleInput()
+    {
+        InputX = UserInput.Instance.MoveInput.x;
+
+    }
 
     public void HandleMovement()
     {
-        InputX = UserInput.Instance.MoveInput.x;
         float targetSpeed = InputX * MoveSpeed;
         float accel = Mathf.Abs(InputX) > 0.01f ? acceleration : deceleration;
 
@@ -103,5 +124,27 @@ public class PlayerController : MonoBehaviour
             myRb.linearVelocity = new Vector2(myRb.linearVelocity.x, JumpForce);
         }
     }
+
+
+
+    public void PLayerDie()
+    {
+       Debug.Log("Player Died");
+       Respawn();
+
+    }
+
+    private void Respawn()
+    {
+        myRb.linearVelocity = Vector2.zero;
+
+        Vector3 respawnPos =
+            CheckPointManager.Instance.GetRespawnPosition(StartPoint);
+
+        transform.position = respawnPos;
+    }
+
+
+
 }
 

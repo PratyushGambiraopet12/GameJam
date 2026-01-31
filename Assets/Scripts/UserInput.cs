@@ -18,7 +18,7 @@ public class UserInput : MonoBehaviour
         }
         else
         {
-            Destroy(gameObject);
+            DontDestroyOnLoad(gameObject);
         }   
 
         Controls = new Controls();
