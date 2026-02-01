@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class EnergySystem : MonoBehaviour
@@ -5,7 +6,7 @@ public class EnergySystem : MonoBehaviour
     public static EnergySystem Instance { get; private set; }
 
     [Header("EnergySystem")]
-
+    public float energyDeathDelay = 1.5f;
     public float MaxEnergy = 100f;  
     public float currentEnergy;
 
@@ -71,9 +72,33 @@ public class EnergySystem : MonoBehaviour
 
     private void HandleDrain()
     {
-        Debug.Log("Handling Energy Drain");
+        Debug.Log("Energy depleted - restarting after delay");
 
-        FindAnyObjectByType<PlayerController>().PLayerDie();
+        StartCoroutine(EnergyDeathRoutine());
     }
-   
+
+    private IEnumerator EnergyDeathRoutine()
+    {
+        // Prevent multiple triggers
+        isDepleted = true;
+
+        // Optional: freeze player movement
+        PlayerController.Instance.DisableControl();
+
+        yield return new WaitForSeconds(energyDeathDelay);
+
+        // Reset checkpoints (full restart)
+        CheckPointManager.Instance.ResetCheckpoint();
+
+        // Reset energy
+        currentEnergy = MaxEnergy;
+        isDepleted = false;
+
+        // Respawn at start
+        PlayerController.Instance.RespawnAtStart();
+
+        // Re-enable player
+        PlayerController.Instance.EnableControl();
+    }
+
 }

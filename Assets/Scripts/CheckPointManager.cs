@@ -4,8 +4,9 @@ public class CheckPointManager : MonoBehaviour
 {
     public static CheckPointManager Instance { get; private set; }
 
-    private Vector3 currentCheckpoint;
+    private float SavedEnergy;  
     private bool hasCheckpoint = false;
+    private Vector3 LastCheckpoint;
 
     private void Awake()
     {
@@ -19,14 +20,33 @@ public class CheckPointManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void SetCheckpoint(Vector3 position)
+    public void SetCheckpoint(Vector3 position, float energy)
     {
-        currentCheckpoint = position;
+        LastCheckpoint = position;
+        SavedEnergy = energy;
         hasCheckpoint = true;
+
     }
 
-    public Vector3 GetRespawnPosition(Vector3 defaultPosition)
+    public bool HasCheckpoint()
     {
-        return hasCheckpoint ? currentCheckpoint : defaultPosition;
+        return hasCheckpoint;
+    }   
+
+    public Vector3 GetLastCheckpointPosition(Vector3 Fallback)
+    {
+        return hasCheckpoint ? LastCheckpoint : Fallback;   
+    }
+
+
+    public float GetSavedEnergy(float DefaultEnergy)
+    {
+        return hasCheckpoint ? SavedEnergy : DefaultEnergy;
+    }
+
+    public void ResetCheckpoint()
+    {
+        hasCheckpoint = false;
+        
     }
 }

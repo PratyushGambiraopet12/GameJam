@@ -1,14 +1,9 @@
-using Unity.VisualScripting;
+using System.Collections;
+using TMPro;
 using UnityEngine;
-using UnityEngine.Assertions.Must;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering;
-using UnityEngine.SceneManagement;
-using UnityEngine.Windows;
-
-
 public enum MaskTypes
-{  
+{
     Default,
     Stone,
     Magnet,
@@ -25,25 +20,28 @@ public class PlayerController : MonoBehaviour
 {
     public static PlayerController Instance { get; private set; }
 
-    private Vector3 StartPoint;
-
-    [Header("Movement Settings")]   
+    [Header("Movement Settings")]
     public float MoveSpeed;
     public float JumpForce;
     public float acceleration = 12f;
     public float deceleration = 16f;
 
-
-    [Header("physics")]
+    [Header("Physics")]
     private Rigidbody2D myRb;
-    private float InputX;
+    private float inputX;
     private bool isGrounded;
     public LayerMask GroundLayer;
-    private float GroundCheckDistance = 1f;
+    private float groundCheckDistance = 1f;
+
+    [Header("Position")]
+    private Vector3 startPosition;
+
+    private bool canControl = true;
 
     private void Awake()
     {
         myRb = GetComponent<Rigidbody2D>();
+
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -51,24 +49,20 @@ public class PlayerController : MonoBehaviour
         }
 
         Instance = this;
-        StartPoint = transform.position;
-
+        startPosition = transform.position;
     }
-
 
     private void Update()
     {
 
+        if (!canControl)
+            return;
+        inputX = UserInput.Instance.MoveInput.x;
 
-        HandleInput();
         if (UserInput.Instance.JumpPressedThisFrame())
-        {
             Jump();
-            UserInput.Instance.JumpInput = false;
-        }
 
         var input = UserInput.Instance.Controls.Movement;
-
 
         if (input.MaskDefault.WasPressedThisFrame())
             MaskController.Instance.SwitchMask(MaskTypes.Default);
@@ -81,70 +75,85 @@ public class PlayerController : MonoBehaviour
 
         if (input.MaskMagnet.WasPressedThisFrame())
             MaskController.Instance.SwitchMask(MaskTypes.Magnet);
+
+
+     
     }
 
     private void FixedUpdate()
     {
+        if (!canControl)
+            return;
         HandleMovement();
-        HandleJump();
-
-
+        CheckGround();
     }
 
-
-    public void HandleInput()
+    private void HandleMovement()
     {
-        InputX = UserInput.Instance.MoveInput.x;
-
-    }
-
-    public void HandleMovement()
-    {
-        float targetSpeed = InputX * MoveSpeed;
-        float accel = Mathf.Abs(InputX) > 0.01f ? acceleration : deceleration;
+        float targetSpeed = inputX * MoveSpeed;
+        float accel = Mathf.Abs(inputX) > 0.01f ? acceleration : deceleration;
 
         float newX = Mathf.MoveTowards(
             myRb.linearVelocity.x,
             targetSpeed,
-            accel * Time.deltaTime
+            accel * Time.fixedDeltaTime
         );
+
         myRb.linearVelocity = new Vector2(newX, myRb.linearVelocity.y);
     }
 
-    private void HandleJump()
+    private void CheckGround()
     {
-        isGrounded = Physics2D.Raycast(transform.position, Vector2.down, GroundCheckDistance, GroundLayer);
+        isGrounded = Physics2D.Raycast(
+            transform.position,
+            Vector2.down,
+            groundCheckDistance,
+            GroundLayer
+        );
     }
-
 
     private void Jump()
     {
-        if (isGrounded)
-        {
-            myRb.linearVelocity = new Vector2(myRb.linearVelocity.x, JumpForce);
-        }
+        if (!isGrounded) return;
+
+        myRb.linearVelocity = new Vector2(myRb.linearVelocity.x, JumpForce);
     }
-
-
 
     public void PLayerDie()
     {
-       Debug.Log("Player Died");
-       Respawn();
-
+        RespawnAtCheckpoint();
     }
 
-    private void Respawn()
+    private void RespawnAtCheckpoint()
     {
         myRb.linearVelocity = Vector2.zero;
 
-        Vector3 respawnPos =
-            CheckPointManager.Instance.GetRespawnPosition(StartPoint);
+        Vector3 spawnPos =
+            CheckPointManager.Instance.GetLastCheckpointPosition(startPosition);
 
-        transform.position = respawnPos;
+        float savedEnergy =
+            CheckPointManager.Instance.GetSavedEnergy(EnergySystem.Instance.MaxEnergy);
+
+        transform.position = spawnPos;
+        EnergySystem.Instance.currentEnergy = savedEnergy;
+    }
+
+    public void RespawnAtStart()
+    {  
+        myRb.linearVelocity = Vector2.zero;
+        transform.position = startPosition;
+        MaskController.Instance.SwitchMask(MaskTypes.Default);
     }
 
 
+    public void DisableControl()
+    {
+        canControl = false;
+        myRb.linearVelocity = Vector2.zero;
+    }
 
+    public void EnableControl()
+    {
+        canControl = true;
+    }
 }
-

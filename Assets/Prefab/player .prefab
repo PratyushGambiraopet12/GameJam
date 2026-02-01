@@ -14,6 +14,8 @@ GameObject:
   - component: {fileID: 4522993362725086738}
   - component: {fileID: 3731205869677607084}
   - component: {fileID: 2635334149065419204}
+  - component: {fileID: 4527259005976315108}
+  - component: {fileID: 2878671791422298601}
   - component: {fileID: 2879193704714978849}
   m_Layer: 0
   m_Name: 'player '
@@ -192,6 +194,40 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MaskController
   currentMask: 0
   SwitchCost: 1
+--- !u!114 &4527259005976315108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7797618316567556195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3cb2b2448de6b04eafd9da22a99c041, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MagnetAttactor
+  attractionRadius: 6
+  holdOffsetX: 1.5
+  holdSpeed: 3
+--- !u!114 &2878671791422298601
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7797618316567556195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41099979ed1cd874eb8be13180609bea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnergySystem
+  MaxEnergy: 100
+  currentEnergy: 0
+  deafaultRate: 1.5
+  StoneDrain: 6
+  MagnetDrain: 3
+  FeatherDrain: 2
+  energyTimeScale: 1
 --- !u!114 &2879193704714978849
 MonoBehaviour:
   m_ObjectHideFlags: 0
