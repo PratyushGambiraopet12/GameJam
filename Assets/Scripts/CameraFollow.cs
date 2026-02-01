@@ -4,53 +4,58 @@ public class CameraFollow : MonoBehaviour
 {
     [Header("Target")]
     public Transform target;
+    private Rigidbody2D targetRb;
 
     [Header("Follow Settings")]
-    public float followSpeed = 5f;
+    public float followSmoothSpeed = 5f;
 
-    [Header("Look Ahead")]
+    [Header("Look Ahead Settings")]
     public float lookAheadDistance = 3f;
-    public float lookAheadSpeed = 5f;
+    public float lookAheadSmoothSpeed = 5f;
+    public float movementThreshold = 0.1f;
 
     private float currentLookAheadX;
     private float targetLookAheadX;
-
     private Vector3 velocity = Vector3.zero;
 
-    private void FixedUpdate()
+    void Start()
     {
-        if (target == null) return;
+        if (target != null)
+            targetRb = target.GetComponent<Rigidbody2D>();
+    }
 
-        float moveDir = Mathf.Sign(target.GetComponent<Rigidbody2D>().linearVelocity.x);
+    void LateUpdate()
+    {
+        if (target == null || targetRb == null) return;
 
-        // If player is moving, shift camera
-        if (Mathf.Abs(target.GetComponent<Rigidbody2D>().linearVelocity.x) > 0.1f)
-        {
-            targetLookAheadX = moveDir * lookAheadDistance;
-        }
+        float moveX = targetRb.linearVelocity.x;
+
+        // Decide look-ahead direction
+        if (Mathf.Abs(moveX) > movementThreshold)
+            targetLookAheadX = Mathf.Sign(moveX) * lookAheadDistance;
         else
-        {
             targetLookAheadX = 0f;
-        }
 
-        // Smoothly interpolate look-ahead
+        // Smooth look-ahead transition
         currentLookAheadX = Mathf.Lerp(
             currentLookAheadX,
             targetLookAheadX,
-            lookAheadSpeed * Time.deltaTime
+            lookAheadSmoothSpeed * Time.deltaTime
         );
 
+        // Final camera position
         Vector3 targetPosition = new Vector3(
             target.position.x + currentLookAheadX,
-            transform.position.y,
+            target.position.y,
             transform.position.z
         );
 
+        // Smooth follow
         transform.position = Vector3.SmoothDamp(
             transform.position,
             targetPosition,
             ref velocity,
-            1f / followSpeed
+            1f / followSmoothSpeed
         );
     }
 }

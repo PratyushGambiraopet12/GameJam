@@ -87,8 +87,6 @@ public class PlayerController : MonoBehaviour
     {
         HandleMovement();
         HandleJump();
-
-
     }
 
 
@@ -143,8 +141,5 @@ public class PlayerController : MonoBehaviour
 
         transform.position = respawnPos;
     }
-
-
-
 }
 
