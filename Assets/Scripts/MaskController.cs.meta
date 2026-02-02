@@ -1,2 +1,15 @@
 fileFormatVersion: 2
 guid: 5d902a26680a15a42a332367b9923924
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - defaultSprite: {fileID: 4310290966548241490, guid: f6da8b9cfdef6cb45a59dbe17ccc9189, type: 3}
+  - stoneSprite: {fileID: -6952536451665515319, guid: 6d3bba594b63ed24cb03af57d4bfcd00, type: 3}
+  - featherSprite: {fileID: -1059880891520133696, guid: f1289e57646808c4eb24fcb4ad2a5e03, type: 3}
+  - magnetSprite: {fileID: -7372389374115137824, guid: 7e83dc63456bc21408c06fd27534e8bd, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

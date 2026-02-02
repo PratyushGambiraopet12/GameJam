@@ -1,24 +1,27 @@
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class MaskController : MonoBehaviour
 {
     public MaskTypes currentMask;
-    
+
     private Rigidbody2D Rb;
     private SpriteRenderer SR;
 
-
+    [Header("Mask Sprites")]
+    public Sprite defaultSprite;
+    public Sprite stoneSprite;
+    public Sprite featherSprite;
+    public Sprite magnetSprite;
 
     [Header("Mask Properties")]
-    public float SwitchCost= 1.0f;
-    
+    public float SwitchCost = 1.0f;
+
     public static MaskController Instance { get; private set; }
 
-    
     private void Awake()
     {
         Rb = GetComponent<Rigidbody2D>();
+
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -26,62 +29,54 @@ public class MaskController : MonoBehaviour
         }
 
         Instance = this;
-
-        SR = GetComponent<SpriteRenderer>();    
-
+        SR = GetComponent<SpriteRenderer>();
     }
-
 
     public void SwitchMask(MaskTypes newMask)
     {
         if (currentMask == newMask) return;
 
-
-        currentMask  = newMask;
+        currentMask = newMask;
         ApplyMask(newMask);
     }
 
-
-    public void ApplyMask(MaskTypes Mask)
+    public void ApplyMask(MaskTypes mask)
     {
+        // Reset defaults before applying specific mask
         Rb.mass = 3f;
         Rb.gravityScale = 2.5f;
+        PlayerController.Instance.MoveSpeed = 4.5f;
 
-        switch (Mask)
+        switch (mask)
         {
-
             case MaskTypes.Default:
-                Rb.mass = 3f;
-                Rb.gravityScale = 2.5f;
-                SR.color = Color.white;
-                PlayerController.Instance.MoveSpeed = 4.5f;   
+                SR.sprite = defaultSprite;
                 Debug.Log("Default Mask Applied");
                 break;
 
             case MaskTypes.Stone:
                 Rb.mass = 6f;
                 Rb.gravityScale = 3.5f;
-                SR.color = Color.gray;
                 PlayerController.Instance.MoveSpeed = 2f;
+                SR.sprite = stoneSprite;
                 Debug.Log("Stone Mask Applied");
                 break;
 
             case MaskTypes.Feather:
                 Rb.mass = 0.5f;
                 Rb.gravityScale = 1.5f;
-                SR.color = Color.blue;
                 PlayerController.Instance.MoveSpeed = 6f;
-                Debug.Log("Feather Mask Applied");  
+                SR.sprite = featherSprite;
+                Debug.Log("Feather Mask Applied");
                 break;
 
             case MaskTypes.Magnet:
                 Rb.mass = 4f;
                 Rb.gravityScale = 3f;
-                SR.color = Color.cyan;
                 PlayerController.Instance.MoveSpeed = 3f;
+                SR.sprite = magnetSprite;
                 Debug.Log("Magnet Mask Applied");
                 break;
         }
-
     }
 }

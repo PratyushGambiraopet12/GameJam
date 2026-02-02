@@ -14,6 +14,9 @@ public class CameraFollow : MonoBehaviour
     public float lookAheadSmoothSpeed = 5f;
     public float movementThreshold = 0.1f;
 
+    [Header("Vertical Offset")]
+    public float verticalOffset = 2f; // 👈 Moves camera upward
+
     private float currentLookAheadX;
     private float targetLookAheadX;
     private Vector3 velocity = Vector3.zero;
@@ -43,14 +46,14 @@ public class CameraFollow : MonoBehaviour
             lookAheadSmoothSpeed * Time.deltaTime
         );
 
-        // Final camera position
+        // Final camera position with vertical offset
         Vector3 targetPosition = new Vector3(
             target.position.x + currentLookAheadX,
-            target.position.y,
+            target.position.y + verticalOffset, // 👈 KEY FIX
             transform.position.z
         );
 
-        // Smooth follow
+        // Smooth follow movement
         transform.position = Vector3.SmoothDamp(
             transform.position,
             targetPosition,
