@@ -1,11 +1,4 @@
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Assertions.Must;
-using UnityEngine.InputSystem;
-using UnityEngine.Rendering;
-using UnityEngine.SceneManagement;
-using UnityEngine.Windows;
-
 
 public enum MaskTypes
 {  
@@ -13,7 +6,6 @@ public enum MaskTypes
     Stone,
     Magnet,
     Feather
-
 }
 
 public enum SpikeType
@@ -21,6 +13,7 @@ public enum SpikeType
     Wooden,
     Metal
 }
+
 public class PlayerController : MonoBehaviour
 {
     public static PlayerController Instance { get; private set; }
@@ -33,8 +26,7 @@ public class PlayerController : MonoBehaviour
     public float acceleration = 12f;
     public float deceleration = 16f;
 
-
-    [Header("physics")]
+    [Header("Physics")]
     private Rigidbody2D myRb;
     private float InputX;
     private bool isGrounded;
@@ -44,6 +36,7 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         myRb = GetComponent<Rigidbody2D>();
+
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -52,15 +45,19 @@ public class PlayerController : MonoBehaviour
 
         Instance = this;
         StartPoint = transform.position;
-
     }
-
 
     private void Update()
     {
-
+        // 🔒 BLOCK ALL INPUT WHEN TUTORIAL IS OPEN
+        if (TutorialManager.Instance != null &&
+            TutorialManager.Instance.IsTutorialOpen)
+        {
+            return;
+        }
 
         HandleInput();
+
         if (UserInput.Instance.JumpPressedThisFrame())
         {
             Jump();
@@ -68,7 +65,6 @@ public class PlayerController : MonoBehaviour
         }
 
         var input = UserInput.Instance.Controls.Movement;
-
 
         if (input.MaskDefault.WasPressedThisFrame())
             MaskController.Instance.SwitchMask(MaskTypes.Default);
@@ -85,18 +81,24 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        // 🔒 BLOCK PHYSICS MOVEMENT DURING TUTORIAL
+        if (TutorialManager.Instance != null &&
+            TutorialManager.Instance.IsTutorialOpen)
+        {
+            myRb.linearVelocity = Vector2.zero;
+            return;
+        }
+
         HandleMovement();
         HandleJump();
     }
 
-
-    public void HandleInput()
+    private void HandleInput()
     {
         InputX = UserInput.Instance.MoveInput.x;
-
     }
 
-    public void HandleMovement()
+    private void HandleMovement()
     {
         float targetSpeed = InputX * MoveSpeed;
         float accel = Mathf.Abs(InputX) > 0.01f ? acceleration : deceleration;
@@ -106,30 +108,35 @@ public class PlayerController : MonoBehaviour
             targetSpeed,
             accel * Time.deltaTime
         );
+
         myRb.linearVelocity = new Vector2(newX, myRb.linearVelocity.y);
     }
 
     private void HandleJump()
     {
-        isGrounded = Physics2D.Raycast(transform.position, Vector2.down, GroundCheckDistance, GroundLayer);
+        isGrounded = Physics2D.Raycast(
+            transform.position,
+            Vector2.down,
+            GroundCheckDistance,
+            GroundLayer
+        );
     }
-
 
     private void Jump()
     {
         if (isGrounded)
         {
-            myRb.linearVelocity = new Vector2(myRb.linearVelocity.x, JumpForce);
+            myRb.linearVelocity = new Vector2(
+                myRb.linearVelocity.x,
+                JumpForce
+            );
         }
     }
 
-
-
-    public void PLayerDie()
+    public void PlayerDie()
     {
-       Debug.Log("Player Died");
-       Respawn();
-
+        Debug.Log("Player Died");
+        Respawn();
     }
 
     private void Respawn()
@@ -142,4 +149,3 @@ public class PlayerController : MonoBehaviour
         transform.position = respawnPos;
     }
 }
-

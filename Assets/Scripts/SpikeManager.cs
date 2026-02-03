@@ -17,7 +17,7 @@ public class SpikeManager : MonoBehaviour
 
         if (ShouldKillPlayer())
         {
-            Player.PLayerDie();
+            Player.PlayerDie();
         }
         
     }

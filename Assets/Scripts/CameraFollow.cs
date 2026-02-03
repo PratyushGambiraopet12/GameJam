@@ -33,11 +33,12 @@ public class CameraFollow : MonoBehaviour
 
         float moveX = targetRb.linearVelocity.x;
 
-        // Decide look-ahead direction
+        // Only update look-ahead when player is actually moving
         if (Mathf.Abs(moveX) > movementThreshold)
+        {
             targetLookAheadX = Mathf.Sign(moveX) * lookAheadDistance;
-        else
-            targetLookAheadX = 0f;
+        }
+        // ❌ NO ELSE HERE (this is the fix)
 
         // Smooth look-ahead transition
         currentLookAheadX = Mathf.Lerp(
@@ -46,14 +47,13 @@ public class CameraFollow : MonoBehaviour
             lookAheadSmoothSpeed * Time.deltaTime
         );
 
-        // Final camera position with vertical offset
+        // Final camera position
         Vector3 targetPosition = new Vector3(
             target.position.x + currentLookAheadX,
-            target.position.y + verticalOffset, // 👈 KEY FIX
+            target.position.y + verticalOffset,
             transform.position.z
         );
 
-        // Smooth follow movement
         transform.position = Vector3.SmoothDamp(
             transform.position,
             targetPosition,
@@ -61,4 +61,5 @@ public class CameraFollow : MonoBehaviour
             1f / followSmoothSpeed
         );
     }
+
 }
