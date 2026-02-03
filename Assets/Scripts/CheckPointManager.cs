@@ -1,10 +1,11 @@
 using UnityEngine;
 
-public class CheckPointManager : MonoBehaviour
+public class CheckpointManager : MonoBehaviour
 {
-    public static CheckPointManager Instance { get; private set; }
+    public static CheckpointManager Instance { get; private set; }
 
-    private Vector3 currentCheckpoint;
+    private Vector3 lastCheckpointPosition;
+    private float savedEnergy;
     private bool hasCheckpoint = false;
 
     private void Awake()
@@ -19,14 +20,31 @@ public class CheckPointManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void SetCheckpoint(Vector3 position)
+    
+    public void SetCheckpoint(Vector3 position, float energy)
     {
-        currentCheckpoint = position;
+        lastCheckpointPosition = position;
+        savedEnergy = energy;
         hasCheckpoint = true;
+
+        Debug.Log($"Checkpoint saved at {position}, Energy: {energy}");
     }
 
-    public Vector3 GetRespawnPosition(Vector3 defaultPosition)
+    
+    public Vector3 GetLastCheckpointPosition(Vector3 fallback)
     {
-        return hasCheckpoint ? currentCheckpoint : defaultPosition;
+        return hasCheckpoint ? lastCheckpointPosition : fallback;
+    }
+
+    public float GetSavedEnergy(float fallback)
+    {
+        return hasCheckpoint ? savedEnergy : fallback;
+    }
+
+    
+    public void ResetCheckpoints()
+    {
+        hasCheckpoint = false;
+        Debug.Log("Checkpoints reset");
     }
 }

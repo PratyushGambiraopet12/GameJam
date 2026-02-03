@@ -1,4 +1,11 @@
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Assertions.Must;
+using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
+using UnityEngine.Windows;
+
 
 public enum MaskTypes
 {  
@@ -6,6 +13,7 @@ public enum MaskTypes
     Stone,
     Magnet,
     Feather
+
 }
 
 public enum SpikeType
@@ -14,29 +22,31 @@ public enum SpikeType
     Metal
 }
 
+
 public class PlayerController : MonoBehaviour
 {
     public static PlayerController Instance { get; private set; }
 
-    private Vector3 StartPoint;
-
-    [Header("Movement Settings")]   
-    public float MoveSpeed;
-    public float JumpForce;
+    [Header("Movement Settings")]
+    public float moveSpeed = 6f;
+    public float jumpForce = 12f;
     public float acceleration = 12f;
     public float deceleration = 16f;
+    
 
-    [Header("Physics")]
-    private Rigidbody2D myRb;
-    private float InputX;
+    [Header("Ground Check")]
+    public LayerMask groundLayer;
+    public float groundCheckDistance = 1f;
+
+    private Rigidbody2D rb;
+    private float inputX;
     private bool isGrounded;
-    public LayerMask GroundLayer;
-    private float GroundCheckDistance = 1f;
+    private bool canControl = true;
+
+    private Vector3 startPosition;
 
     private void Awake()
     {
-        myRb = GetComponent<Rigidbody2D>();
-
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -44,25 +54,18 @@ public class PlayerController : MonoBehaviour
         }
 
         Instance = this;
-        StartPoint = transform.position;
+        rb = GetComponent<Rigidbody2D>();
+        startPosition = transform.position;
+       
     }
 
     private void Update()
     {
-        // 🔒 BLOCK ALL INPUT WHEN TUTORIAL IS OPEN
-        if (TutorialManager.Instance != null &&
-            TutorialManager.Instance.IsTutorialOpen)
-        {
+        if (!canControl || TutorialManager.Instance.IsTutorialOpen)
             return;
-        }
-
-        HandleInput();
 
         if (UserInput.Instance.JumpPressedThisFrame())
-        {
             Jump();
-            UserInput.Instance.JumpInput = false;
-        }
 
         var input = UserInput.Instance.Controls.Movement;
 
@@ -72,80 +75,100 @@ public class PlayerController : MonoBehaviour
         if (input.MaskStone.WasPressedThisFrame())
             MaskController.Instance.SwitchMask(MaskTypes.Stone);
 
-        if (input.MaskFeather.WasPressedThisFrame())
-            MaskController.Instance.SwitchMask(MaskTypes.Feather);
-
         if (input.MaskMagnet.WasPressedThisFrame())
             MaskController.Instance.SwitchMask(MaskTypes.Magnet);
+
+        if (input.MaskFeather.WasPressedThisFrame())
+            MaskController.Instance.SwitchMask(MaskTypes.Feather);
     }
+
 
     private void FixedUpdate()
     {
-        // 🔒 BLOCK PHYSICS MOVEMENT DURING TUTORIAL
-        if (TutorialManager.Instance != null &&
-            TutorialManager.Instance.IsTutorialOpen)
+        if (!canControl || TutorialManager.Instance.IsTutorialOpen)
         {
-            myRb.linearVelocity = Vector2.zero;
+            rb.linearVelocity = Vector2.zero; // freeze player
             return;
         }
 
         HandleMovement();
-        HandleJump();
+        CheckGround();
     }
 
-    private void HandleInput()
-    {
-        InputX = UserInput.Instance.MoveInput.x;
-    }
 
     private void HandleMovement()
     {
-        float targetSpeed = InputX * MoveSpeed;
-        float accel = Mathf.Abs(InputX) > 0.01f ? acceleration : deceleration;
+        
+        inputX = UserInput.Instance.MoveInput.x;
+        
+        float targetSpeed = inputX * moveSpeed;
+        float accel = Mathf.Abs(inputX) > 0.01f ? acceleration : deceleration;
 
         float newX = Mathf.MoveTowards(
-            myRb.linearVelocity.x,
+            rb.linearVelocity.x,
             targetSpeed,
-            accel * Time.deltaTime
+            accel * Time.fixedDeltaTime
         );
 
-        myRb.linearVelocity = new Vector2(newX, myRb.linearVelocity.y);
+        rb.linearVelocity = new Vector2(newX, rb.linearVelocity.y);
     }
 
-    private void HandleJump()
+    private void CheckGround()
     {
         isGrounded = Physics2D.Raycast(
             transform.position,
             Vector2.down,
-            GroundCheckDistance,
-            GroundLayer
+            groundCheckDistance,
+            groundLayer
         );
     }
 
     private void Jump()
     {
-        if (isGrounded)
-        {
-            myRb.linearVelocity = new Vector2(
-                myRb.linearVelocity.x,
-                JumpForce
-            );
-        }
+        if (!isGrounded)
+            return;
+
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
     }
 
+  
     public void PlayerDie()
     {
-        Debug.Log("Player Died");
-        Respawn();
+        RespawnAtCheckpoint();
     }
 
-    private void Respawn()
+    private void RespawnAtCheckpoint()
     {
-        myRb.linearVelocity = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
 
-        Vector3 respawnPos =
-            CheckPointManager.Instance.GetRespawnPosition(StartPoint);
+        Vector3 spawnPos =
+            CheckpointManager.Instance.GetLastCheckpointPosition(startPosition);
 
-        transform.position = respawnPos;
+        float savedEnergy =
+            CheckpointManager.Instance.GetSavedEnergy(EnergySystem.Instance.MaxEnergy);
+
+        transform.position = spawnPos;
+        EnergySystem.Instance.currentEnergy = savedEnergy;
+    }
+
+    
+    public void RespawnAtStart()
+    {
+        rb.linearVelocity = Vector2.zero;
+        transform.position = startPosition;
+        MaskController.Instance.SwitchMask(MaskTypes.Default);
+    }
+
+   
+
+    public void DisableControl()
+    {
+        canControl = false;
+        rb.linearVelocity = Vector2.zero;
+    }
+
+    public void EnableControl()
+    {
+        canControl = true;
     }
 }

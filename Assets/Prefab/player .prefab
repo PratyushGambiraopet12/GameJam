@@ -14,10 +14,12 @@ GameObject:
   - component: {fileID: 6817326856866186348}
   - component: {fileID: 8838500938531136473}
   - component: {fileID: 5344970871017309629}
+  - component: {fileID: 3685215815545455307}
   - component: {fileID: 1085307696113388381}
+  - component: {fileID: 9190392280996171290}
   m_Layer: 0
   m_Name: 'player '
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -84,9 +86,9 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 5
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: f6da8b9cfdef6cb45a59dbe17ccc9189, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -119,7 +121,7 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
@@ -171,13 +173,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15d02063ee878aa4f92f707cfeda4805, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  MoveSpeed: 4.5
-  JumpForce: 9.5
+  moveSpeed: 6
+  jumpForce: 10
   acceleration: 12
   deceleration: 10
-  GroundLayer:
+  groundLayer:
     serializedVersion: 2
     m_Bits: 64
+  groundCheckDistance: 1
 --- !u!114 &5344970871017309629
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -191,7 +194,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MaskController
   currentMask: 0
+  defaultSprite: {fileID: 21300000, guid: f6da8b9cfdef6cb45a59dbe17ccc9189, type: 3}
+  stoneSprite: {fileID: 21300000, guid: 6d3bba594b63ed24cb03af57d4bfcd00, type: 3}
+  featherSprite: {fileID: 21300000, guid: f1289e57646808c4eb24fcb4ad2a5e03, type: 3}
+  magnetSprite: {fileID: 21300000, guid: 7e83dc63456bc21408c06fd27534e8bd, type: 3}
   SwitchCost: 1
+--- !u!114 &3685215815545455307
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1180537245716921347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97ce7a27521ce734297ec8d96ab86b7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MagnetAttractor
+  attractionRadius: 5
+  holdOffsetX: 1.5
+  holdSpeed: 3
 --- !u!114 &1085307696113388381
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -204,3 +226,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33b2c4dbea6597b428db65b6153c4b2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCollisionHandler
+--- !u!114 &9190392280996171290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1180537245716921347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41099979ed1cd874eb8be13180609bea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnergySystem
+  MaxEnergy: 100
+  currentEnergy: 0
+  defaultDrain: 2.5
+  stoneDrain: 10
+  magnetDrain: 3.5
+  featherDrain: 4
+  energyTimeScale: 0.25
+  energyDeathDelay: 1.5
